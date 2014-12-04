@@ -1,0 +1,64 @@
+<!doctype html>
+<html ng-app="nba">
+<head>
+  <title>NBA</title>
+  <meta name="viewport" content="minimal-ui">
+  <meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=10.0; user-scalable=1;" />
+  <script src="bower_components/angular/angular.js"></script>
+  <script src="bower_components/angular-animate/angular-animate.js"></script>
+  <script src="bower_components/angular-aria/angular-aria.js"></script>
+  <script src="bower_components/angular-material/angular-material.js"></script>
+  <script src="bower_components/hammerjs/hammer.js"></script>
+  <style type="text/css">
+  md-card {
+    min-height: 150px;
+  }
+  </style>
+</head>
+<body>
+  <script>
+    angular.module('nba',['ngMaterial'])
+    .filter('convertDate', [function(){
+      return function(input) {
+        var d = new Date(0);
+        return d.setUTCSeconds(input);
+      };
+    }])
+    .factory('nbaService', ['$http', '$q', function($http, $q) {
+      return {
+        getNba: function(){
+          var deferred = $q.defer();
+          $http.get('http://www.reddit.com/r/nba.json').success(function(data) {
+            var children = data.data.children,
+                results = [];
+            angular.forEach(children, function(value, key) {
+              if(/gfycat/.test(value.data.url)){
+                this.push(value);
+              }
+            }, results);
+            deferred.resolve(results);
+          });
+          return deferred.promise;
+        }
+      };
+    }])
+    .controller('mainController', ['$scope','$window', 'nbaService', function($scope, $window, nbaService) {
+     nbaService.getNba().then(function(data){
+      $scope.stories = data;
+      console.log(data);
+     })
+    }]);
+  </script>
+  <div ng-controller="mainController" layout="row">
+    </md-content>
+      <md-card ng-repeat="story in stories">
+        <h2><a href="{{story.data.url}}">{{story.data.title}}</a></h2>
+        <p><a ng-href="{{'https://reddit.com' + story.data.permalink}}">
+          {{story.data.created_utc | convertDate | date: 'shortTime'}}</a>
+        </p>
+      </md-card>
+    </md-content>
+  </div>
+
+</body>
+</html>
