@@ -1,9 +1,7 @@
 var React = require('react');
-var $ = require('jquery');
 var ReactDOM = require('react-dom');
 
 var imgStyle = {
-  // maxWidth: '300px',
   maxHeight: '200px'
 }
 
@@ -11,7 +9,7 @@ var HighLight = React.createClass({
   render: function() {
     return (
       <div>
-        <video controls poster={"https://cdn.streamable.com/image/" + this.props.h.shortCode + ".jpg"} width="100%">
+        <video preload="none" controls poster={"https://cdn.streamable.com/image/" + this.props.h.shortCode + ".jpg"} width="100%">
           <source src={"https://cdn.streamable.com/video/mp4-mobile/" + this.props.h.shortCode + ".mp4"} />
         </video>
           <h1>{this.props.h.title}</h1>
@@ -44,7 +42,9 @@ var UserGist = React.createClass({
   },
 
   componentDidMount: function() {
-    $.get(this.props.source, function(result) {
+    fetch(this.props.source).then(function(response) {
+      return response.json();
+    }).then(function(result) {
       console.log('result', result)
       let streamableLinks = filterStreamableLinks(result.data.children);
       if (this.isMounted()) {
